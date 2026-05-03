@@ -57,8 +57,6 @@ grupo-ortiz-eda/
  
 > **Confidentiality notice:** Data has been anonymized and partially adjusted for demonstration purposes. Methodology and findings remain analytically valid.
  
----
- 
 ## Live Demo
  
-[→ Explore project data room](https://docs.google.com/spreadsheets/d/1BGLI6oG-vM-EAFV9dI5582vjpickKF2F/edit?gid=935384027#gid=935384027)
+[→ Explore project data room](https://drive.google.com/drive/folders/19zmmRDBs9ehXa_5uu9DnvRWcxm_OjNj8?usp=drive_link)
