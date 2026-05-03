@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grupo Ortiz · EDA Notebook · Rentabilidad Real</title>
+  <meta name="author" content="Marco Avila">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0a0e14;
+      --bg2: #0a0e14;
+      --surface: #111720;
+      --surface2: #161e2a;
+      --border: #1e2d3d;
+      --border2: #20304a;
+      --accent: #FC6C26;
+      --accent2: #e85d26;
+      --accent3: #0a5cb8;
+      --green: #22c55e;
+      --danger: #ef4444;
+      --purple: #a78bfa;
+      --teal: #3b82f6;
+      --text: #c4d4e8;
+      --text-dim: #445a78;
+      --text-bright: #eaf2ff;
+      --cell-bg: #090c14;
+      --font-code: 'JetBrains Mono', monospace;
+      --font-serif: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-serif);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    /* HEADER */
+    .nb-header {
+      border-bottom: 1px solid var(--border);
+      padding: 32px 48px 24px;
+      background: linear-gradient(160deg, #0a0e14 0%, var(--bg) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nb-header::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -80px;
+      width: 300px;
+      height: 300px;
+      pointer-events: none;
+    }
+
+    .nb-badge {
+      display: inline-block;
+      background: rgba(249, 156, 16, 0.1);
+      color: #60a5fa;
+      border: 1px solid rgba(255, 94, 0, 0.2);
+      color: var(--accent);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 2px;
+      margin-bottom: 14px;
+    }
+
+    .nb-title {
+      font-family: var(--font-serif);
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--text-bright);
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+
+    .nb-title span {
+      color: var(--accent);
+      font-style: italic;
+    }
+
+    .nb-subtitle {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+      max-width: 700px;
+    }
+
+    .nb-meta {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .nb-chip {
+      background: rgba(245, 166, 35, 0.08);
+      border: 1px solid rgba(245, 166, 35, 0.2);
+      border-radius: 4px;
+      padding: 4px 12px;
+      font-size: 10px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+    }
+
+    .nb-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .nb-meta-item span {
+      color: var(--accent);
+      font-size: 11px;
+    }
+
+    /* LAYOUT */
+    .notebook {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 24px 48px 80px;
+    }
+
+    .section {
+      margin: 44px 0 0;
+    }
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .sec-num {
+      font-size: 9px;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      border: 1px solid rgba(245, 166, 35, 0.3);
+      padding: 2px 9px;
+      border-radius: 3px;
+    }
+
+    .sec-title {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-bright);
+    }
+
+    .sec-title em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    /* CELLS */
+    .cell {
+      margin-bottom: 14px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s;
+    }
+
+    .cell:hover {
+      border-color: rgba(245, 166, 35, 0.2);
+    }
+
+    .cell-hd {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ct {
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 3px;
+    }
+
+    .ct.code {
+      background: rgba(167, 139, 250, 0.12);
+      color: #c4b5fd;
+      border: 1px solid rgba(167, 139, 250, 0.25);
+    }
+
+    .ct.md {
+      background: rgba(245, 166, 35, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(245, 166, 35, 0.2);
+    }
+
+    .ct.out {
+      background: rgba(59, 130, 246, 0.1);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .cell-title {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .cell-body {
+      background: var(--cell-bg);
+      padding: 16px 20px;
+    }
+
+    .code-block {
+      font-family: var(--font-code);
+      font-size: 12px;
+      line-height: 1.85;
+      white-space: pre-wrap;
+    }
+
+    .kw {
+      color: #ff79c6;
+    }
+
+    .fn {
+      color: #50fa7b;
+    }
+
+    .str {
+      color: #f1fa8c;
+    }
+
+    .cm {
+      color: #4a5e7a;
+      font-style: italic;
+    }
+
+    .num {
+      color: #bd93f9;
+    }
+
+    .var {
+      color: #8be9fd;
+    }
+
+    /* MARKDOWN */
+    .md-cell {
+      padding: 16px 20px;
+      background: rgba(245, 166, 35, 0.02);
+      border-left: 3px solid rgba(245, 166, 35, 0.3);
+      font-size: 12.5px;
+      line-height: 1.85;
+      color: var(--text);
+    }
+
+    .md-cellv2 {
+      padding: 16px 20px;
+      font-size: 12.5px;
+      line-height: 1.85;
+      color: var(--text);
+    }
+
+    .md-cellv3 {
+      padding-right: 20px;
+      padding-bottom: 18px;
+      padding-left: 20px;
+      font-size: 12.5px;
+      line-height: 1.85;
+      color: var(--text);
+    }
+
+    .md-cell h3 {
+      font-family: var(--font-serif);
+      color: var(--text-bright);
+      font-size: 16px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .md-cell p {
+      margin-bottom: 8px;
+    }
+
+    .md-cell strong {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .insight {
+      background: rgba(245, 166, 35, 0.06);
+      border: 1px solid rgba(245, 166, 35, 0.2);
+      border-radius: 4px;
+      padding: 10px 14px;
+      margin-top: 10px;
+      color: #fde68a;
+      font-size: 12px;
+    }
+
+    .insight::before {
+      content: '⚡ Insight: ';
+      font-weight: 700;
+    }
+
+    .finding {
+      background: rgba(239, 68, 68, 0.06);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 4px;
+      padding: 10px 14px;
+      margin-top: 10px;
+      color: #fca5a5;
+      font-size: 12px;
+    }
+
+    .finding::before {
+      content: '🔍 Hallazgo: ';
+      font-weight: 700;
+    }
+
+    .note {
+      background: rgba(59, 130, 246, 0.06);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 4px;
+      padding: 10px 14px;
+      margin-top: 10px;
+      color: #93c5fd;
+      font-size: 12px;
+    }
+
+    .note::before {
+      content: '📌 Metodología: ';
+      font-weight: 700;
+    }
+
+    /* KPI CARDS */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      padding: 18px 20px;
+      background: var(--cell-bg);
+    }
+
+    .kpi-grid2 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      padding-right: 20px;
+      padding-bottom: 10px;
+      padding-left: 20px;
+      background: var(--cell-bg);
+    }
+
+    .kpi-grid-5 {
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    .kpi {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+
+    .kpi.ca::before {
+      background: var(--accent);
+    }
+
+    .kpi.cg::before {
+      background: var(--green);
+    }
+
+    .kpi.cd::before {
+      background: var(--danger);
+    }
+
+    .kpi.cp::before {
+      background: var(--purple);
+    }
+
+    .kpi.ct2::before {
+      background: var(--teal);
+    }
+
+    .kpi.co::before {
+      background: var(--accent2);
+    }
+
+    .kpi-lbl {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .kpi-val {
+      font-family: var(--font-serif);
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--text-bright);
+      margin-bottom: 4px;
+    }
+
+    .kpi-sub {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .kpi-delta {
+      font-size: 10px;
+      margin-top: 5px;
+    }
+
+    .kpi-delta.up {
+      color: var(--green);
+    }
+
+    .kpi-delta.dn {
+      color: var(--danger);
+    }
+
+    .kpi-delta.warn {
+      color: var(--accent);
+    }
+
+    /* CHARTS */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      padding: 18px 20px;
+      background: var(--cell-bg);
+    }
+
+    .chart-box {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 18px;
+    }
+
+    .chart-box.full {
+      grid-column: 1/-1;
+    }
+
+    .chart-lbl {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-lbl::before {
+      content: '';
+      width: 3px;
+      height: 12px;
+      background: var(--accent);
+      border-radius: 2px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    canvas {
+      max-height: 210px;
+    }
+
+    /* DISTORSION TABLE */
+    .dist-table-wrap {
+      padding: 0 0 0 0;
+      background: var(--cell-bg);
+    }
+
+    table.dist {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    .dist th {
+      background: var(--surface2);
+      padding: 9px 14px;
+      text-align: left;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .dist td {
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(26, 37, 64, 0.7);
+      vertical-align: middle;
+    }
+
+    .dist tr:hover td {
+      background: rgba(245, 166, 35, 0.02);
+    }
+
+    .td-r {
+      text-align: right;
+      font-family: var(--font-code);
+      font-size: 11px;
+    }
+
+    .td-acc {
+      color: var(--accent);
+    }
+
+    .td-g {
+      color: var(--green);
+    }
+
+    .td-d {
+      color: var(--danger);
+    }
+
+    .td-dim {
+      color: var(--text-dim);
+    }
+
+    .bar-wrap {
+      width: 80px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 3px;
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
+
+    .badge-dist {
+      display: inline-block;
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    .bd-omit {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .bd-dup {
+      background: rgba(59, 130, 246, 0.12);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    .bd-ok {
+      background: rgba(34, 197, 94, 0.12);
+      color: var(--green);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+
+    .bd-const {
+      background: rgba(167, 139, 250, 0.12);
+      color: var(--purple);
+      border: 1px solid rgba(167, 139, 250, 0.25);
+    }
+
+    /* SCENARIO GRID */
+    .scenario-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      background: var(--cell-bg);
+    }
+
+    .sc-card {
+      padding: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .sc-card:not(:last-child) {
+      border-right: none;
+    }
+
+    .sc-card.hl {
+      background: rgba(245, 166, 35, 0.03);
+      border-color: rgba(245, 166, 35, 0.2);
+    }
+
+    .sc-tag {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 8px;
+    }
+
+    .sc-title {
+      font-family: var(--font-serif);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-bright);
+      margin-bottom: 16px;
+    }
+
+    .sc-row {
+      margin-bottom: 10px;
+    }
+
+    .sc-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-bottom: 3px;
+    }
+
+    .sc-val {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    /* CONCLUSION */
+    .concl {
+      background: linear-gradient(135deg, rgba(245, 166, 35, 0.05), rgba(59, 130, 246, 0.05));
+      border: 1px solid rgba(245, 166, 35, 0.18);
+      border-radius: 6px;
+      padding: 26px 30px;
+      margin: 18px 20px;
+    }
+
+    .concl h3 {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      color: var(--text-bright);
+      margin-bottom: 16px;
+    }
+
+    .concl-item {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      line-height: 1.75;
+    }
+
+    .concl-num {
+      color: var(--accent);
+      flex-shrink: 0;
+      font-size: 11px;
+      padding-top: 2px;
+      font-weight: 700;
+    }
+
+    .concl-text {
+      color: var(--text);
+    }
+
+    .concl-text strong {
+      color: var(--text-bright);
+    }
+
+    /* ── LINK ── */
+    .demo-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 10px 20px;
+      border-radius: 6px;
+      text-decoration: none;
+      margin-top: 20px;
+      letter-spacing: 0.02em;
+      transition: opacity 0.2s;
+    }
+
+    .demo-link:hover {
+      opacity: 0.85;
+    }
+
+    .nb-footer {
+      margin-top: 60px;
+      padding: 18px 0;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .nb-footer span {
+      color: var(--accent);
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    :-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="nb-header">
+    <div class="nb-badge">Finance Data Analysis · 2023</div>
+    <div class="nb-title">Rentabilidad Real en <span>Manufactura Multiplanta</span></div>
+    <div class="nb-subtitle">Estandarización de Costeo, Detección de Distorsiones y Optimización Presupuestal · Grupo
+      Ortiz México</div>
+    <div class="nb-meta">
+      <div class="nb-meta-item">Facturación: <span>$40.8M MXN / mes</span></div>
+      <div class="nb-meta-item">Periodo: <span>2021 - 2023</span></div>
+      <div class="nb-meta-item">Industria: <span>Manufactura de Plásticos</span></div>
+      <div class="nb-meta-item">Stack: <span>Python · SQL · Power BI · Oracle NetSuite</span></div>
+    </div>
+  </div>
+
+  <div class="notebook">
+
+    <!-- IMPACT FIRST -->
+    <div class="section">
+      <div class="section-label"><span class="sec-num">00</span><span class="sec-title">El Resultado Primero / <em>El
+            Resultado Primero </em></span></div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct out">executive summary</span><span class="cell-title">El resultado, por qué
+            este proyecto importa</span></div>
+        <div class="md-cellv2">
+          <h3>El grupo operaba 17 plantas sin una imagen financiera
+            confiable.<br><span style="color:var(--accent);">Este proyecto la construyó desde cero.</span></h3>
+          <p>El 82% de las plantas reportaba márgenes distorsionados — algunas inflados hasta <strong>+10pp</strong>,
+            otras subvaluados hasta <strong>−6pp</strong>. Las decisiones de inversión, expansión y presupuesto se
+            tomaban sobre datos incorrectos. Nadie lo sabía porque nadie tenía una imagen consolidada y comparable.</p>
+          <p style="margin-top:10px;">Al homologar el criterio de costeo e implementar visibilidad unificada en Power
+            BI, el grupo tuvo por primera vez una foto real de su rentabilidad:</p>
+        </div>
+        <div class="kpi-grid2">
+          <div class="kpi ca">
+            <div class="kpi-lbl">Variación de costos vs ppto</div>
+            <div class="kpi-val">±4.2%</div>
+            <div class="kpi-sub">2023 · vs ±14.7% en 2021</div>
+            <div class="kpi-delta up">↓ Reducción del 71%</div>
+          </div>
+          <div class="kpi ca">
+            <div class="kpi-lbl">CCC identificado sin medir</div>
+            <div class="kpi-val">74 días</div>
+            <div class="kpi-sub">vs objetivo de 55 días</div>
+            <div class="kpi-delta dn">↑ Riesgo de liquidez activo</div>
+          </div>
+          <div class="kpi ca">
+            <div class="kpi-lbl">Plantas dentro de tolerancia</div>
+            <div class="kpi-val">13 / 17</div>
+            <div class="kpi-sub">±5% vs presupuesto · 2023</div>
+            <div class="kpi-delta up">↑ vs 5/17 en 2021</div>
+          </div>
+        </div>
+        <div class="md-cellv3">
+          <div class="insight">BOLSAS 1 no había recibido inversión en maquinaria en 2 años porque "sus números no
+            justificaban el capex". Tras la homologación, resultó ser una de las operaciones más eficientes del grupo.
+            El problema no era la planta, eran los datos.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 01 CONTEXTO -->
+    <div class="section">
+      <div class="section-label"><span class="sec-num">01</span><span class="sec-title">Business Context / <em>Contexto
+            de Negocio</em></span></div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct md">markdown</span><span class="cell-title">Problem statement</span></div>
+        <div class="md-cell">
+          <h3>El Problema: Rentabilidad Invisible en 18 Plantas</h3>
+          <p>Grupo Ortiz es un grupo industrial mexicano con <strong>+3,000 empleados</strong> y facturación mensual de
+            <strong>$40.8M MXN</strong>. Opera manufactura de plásticos en ocho categorías de producto, más una planta
+            recicladora, una fletera, un hotel e inmobiliaria. Un negocio diverso, con volumen real.
+          </p>
+          <p>En el área de Business Intelligence recibíamos reportes de <strong>18 plantas</strong> con criterios
+            de costeo que simplemente no eran comparables entre sí. Algunas usaban precio estándar de materia prima sin
+            reflejar variaciones de mercado, aranceles ni fletes de importación. Otras duplicaban conceptos de mano de
+            obra y distribución. Cada planta medía diferente, así que consolidar esos números no producía una imagen
+            real, producía ruido. Una <strong>foto de rentabilidad fragmentada e incomparable</strong> que hacía
+            imposible tomar decisiones de inversión o expansión sobre datos sólidos.</p>
+          <p>El origen del problema era estructural: los ingresos se manejaban a nivel división con un solo equipo
+            comercial, mientras los costos y la producción se gestionaban planta por planta. Esa asimetría de diseño era
+            la fuente de todas las distorsiones. Y generaba tres consecuencias concretas de negocio:</p>
+          <p><strong>1.</strong> La dirección recibía reportes paralelos e inconsistentes, cada gerente presentaba sus
+            números con su propio criterio. No había una sola versión de la verdad.</p>
+          <p><strong>2.</strong> Las decisiones de capex se tomaban sobre rentabilidad aparente, no real. Plantas
+            eficientes no recibían inversión; plantas con márgenes inflados la acaparaban.</p>
+          <p><strong>3.</strong> Ningún KPI de liquidez existía. El Ciclo de Conversión de Efectivo no se calculaba, así
+            que
+            nadie sabía cuánto tardaba el grupo en convertir producción en efectivo disponible.</p>
+          <div class="note">Oracle NetSuite estaba en etapa temprana de implementación y sus datos no eran confiables
+            como fuente única de verdad. Diseñamos formatos de captura estandarizados que las plantas completaban
+            semanalmente. Desde BI los validábamos contra el ERP y construimos una base de datos auditada y homologada.
+          </div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct md">markdown</span><span class="cell-title">Business questions</span></div>
+        <div class="md-cell">
+          <h3>Preguntas de Negocio</h3>
+          <p><strong>1.</strong> ¿Cuál es el margen bruto real de cada planta cuando se aplica un criterio de costeo
+            homologado — incluyendo variación de MP, aduana y overhead corporativo?</p>
+          <p><strong>2.</strong> ¿Qué plantas reportaban márgenes distorsionados y en qué magnitud? ¿Había unidades que
+            se creían rentables y no lo eran?</p>
+          <p><strong>3.</strong> ¿Qué patrón estacional siguen los ingresos por división y cómo debería alinearse el
+            plan de producción y el presupuesto a esa curva?</p>
+          <p><strong>4.</strong> ¿Qué categorías de costo generan las mayores desviaciones vs presupuesto — y en qué
+            divisiones se concentra ese riesgo?</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 DATOS -->
+    <div class="section">
+      <div class="section-label"><span class="sec-num">02</span><span class="sec-title">Data Acquisition &amp; Cleaning
+          / <em>Adquisición y Limpieza</em></span></div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct code">code</span><span
+            class="cell-title">01_pipeline_consolidacion.py</span></div>
+        <div class="cell-body">
+          <div class="code-block"><span class="cm"># ── Fuentes de datos consolidadas por BI Corporativo</span>
+            <span class="cm"># 1. Formatos de captura semanal por planta (Excel estandarizado)</span>
+            <span class="cm"># 2. Oracle NetSuite ERP — validación cruzada (etapa temprana, datos parciales)</span>
+            <span class="cm"># 3. Contabilidad Corporativa — tabla de overhead y activos (depreciación)</span>
+            <span class="cm"># Shape original: 18 plantas × 36 meses × múltiples categorías de costo</span>
+
+            <span class="kw">import</span> <span class="var">pandas</span> <span class="kw">as</span> <span
+              class="var">pd</span>
+            <span class="kw">import</span> <span class="var">numpy</span> <span class="kw">as</span> <span
+              class="var">np</span>
+
+            <span class="var">df</span> = <span class="var">pd</span>.<span class="fn">read_csv</span>(<span
+              class="str">'grupo_ortiz_data.csv'</span>, <span class="var">parse_dates</span>=[<span
+              class="str">'fecha'</span>])
+
+            <span class="cm"># ── Problemas detectados en limpieza inicial ──────────────────</span>
+            <span class="cm"># 1. MATERIA PRIMA: 14 de 15 plantas usaban precio estándar</span>
+            <span class="cm"># sin reflejar variación real de mercado (petroquímicos)</span>
+            <span class="cm"># → corrección: precio real = precio estándar × (1 + var_mp)</span>
+
+            <span class="var">df</span>[<span class="str">'costo_mp_ajustado'</span>] = (
+            <span class="var">df</span>[<span class="str">'costos_real'</span>] * <span class="num">0.58</span> * <span
+              class="cm"># % que representa MP</span>
+            (<span class="num">1</span> + <span class="var">df</span>[<span class="str">'mp_variacion_pct'</span>])
+            )
+
+            <span class="cm"># 2. OVERHEAD CORPORATIVO: 12 plantas no incluían la cuota</span>
+            <span class="cm"># de gastos corporativos asignados por finanzas</span>
+            <span class="cm"># → corrección: cargar tabla de distribución overhead</span>
+
+            <span class="var">overhead_table</span> = <span class="var">pd</span>.<span
+              class="fn">read_excel</span>(<span class="str">'GrupoOrtiz_Formato_Reporte_Semanal.xlsx'</span>,
+            <span class="var">sheet_name</span>=<span class="str">'SUPUESTOS'</span>)
+            <span class="var">df</span> = <span class="var">df</span>.<span class="fn">merge</span>(<span
+              class="var">overhead_table</span>[[<span class="str">'planta'</span>,<span
+              class="str">'monto_fijo_mensual'</span>]],
+            <span class="var">on</span>=<span class="str">'planta'</span>, <span class="var">how</span>=<span
+              class="str">'left'</span>)
+
+            <span class="cm"># 3. DUPLICADOS: ARPILLAS 2, SACOS 2, BOLSAS 1, ESQUINEROS 3</span>
+            <span class="cm"># reportaban flete de distribución ya incluido en costo de MP</span>
+            <span class="cm"># → identificados por comparación con registros NetSuite</span>
+            <span class="cm"># → corrección: eliminar partida duplicada del costo total</span>
+
+            <span class="var">plantas_con_duplicado</span> = [<span class="str">'ARPILLAS 2'</span>, <span
+              class="str">'SACOS 2'</span>, <span class="str">'BOLSAS 1'</span>, <span class="str">'ESQUINEROS
+              3'</span>]
+            <span class="var">df</span>[<span class="str">'costo_homologado'</span>] = <span class="var">df</span>.<span
+              class="fn">apply</span>(
+            <span class="kw">lambda</span> <span class="var">x</span>: <span class="var">x</span>[<span
+              class="str">'costos_real'</span>] * <span class="num">0.94</span>
+            <span class="kw">if</span> <span class="var">x</span>[<span class="str">'planta'</span>] <span
+              class="kw">in</span> <span class="var">plantas_con_duplicado</span>
+            <span class="kw">else</span> <span class="var">x</span>[<span class="str">'costos_real'</span>], <span
+              class="var">axis</span>=<span class="num">1</span>
+            )
+
+            <span class="cm"># 4. NEOFILM MTY: planta en construcción</span>
+            <span class="cm"># → excluida del cálculo de margen divisional</span>
+            <span class="cm"># → incluida como línea separada en reporte de capex</span>
+
+            <span class="var">df_activas</span> = <span class="var">df</span>[<span class="var">df</span>[<span
+              class="str">'planta'</span>] != <span class="str">'NEOFILM MTY'</span>].<span class="fn">copy</span>()
+
+            <span class="cm"># ── Resultado post-limpieza ───────────────────────────────────</span>
+            <span class="cm"># df_activas: 612 registros · 17 plantas · 36 meses</span>
+            <span class="cm"># Columnas clave: ingresos_real, costos_real, costo_homologado,</span>
+            <span class="cm"># costo_mp_ajustado, margen_real, margen_reportado, distorsion_pp</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct out">output</span><span class="cell-title">Data quality report</span></div>
+        <div class="cell-body">
+          <div class="code-block"><span class="cm">Periodo analizado: Enero 2021 – Diciembre 2023 (36 meses)
+              Plantas activas: 17 (excl. NEOFILM MTY — construcción)
+              Registros limpios: 612
+              ──────────────────────────────────────────────────────────────────
+              Problema detectado Plantas afectadas Impacto
+              ──────────────────────────────────────────────────────────────────
+              MP con precio estándar s/ajuste 14 / 17 Subestima costo
+              Overhead corporativo omitido 12 / 17 Infla margen +2–5pp
+              Fletes de distribución duplicados 4 / 17 Subestima margen −4–7pp
+              ──────────────────────────────────────────────────────────────────
+              Única planta sin distorsiones: SACOS 4 ← benchmark de referencia
+              ──────────────────────────────────────────────────────────────────
+              <span class="var">✓</span> Validación cruzada con NetSuite: 91% de registros conciliados
+              <span class="var">⚠</span> 9% requirió ajuste manual con documentación soporte
+              <span class="var">✓</span> NEOFILM MTY etiquetada como CAPEX — excluida del P&L operativo</span></div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct md">markdown</span><span class="cell-title">Criterio metodológico
+            clave</span></div>
+        <div class="md-cell">
+          <div class="note">La única planta que reportaba sin distorsiones era SACOS 4. La usamos como benchmark para
+            calibrar el modelo de costeo homologado. Cualquier planta que se alejara más de ±2pp del benchmark en
+            conceptos operativos equivalentes quedaba marcada para revisión con el gerente de planta.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 DECISIONES ESTRATÉGICAS -->
+    <div class="section">
+      <div class="section-label"><span class="sec-num">03</span><span class="sec-title">Strategic Decisions ·
+          <em>Criterio Detrás del Análisis</em></span></div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct md">markdown</span><span class="cell-title">Por qué formatos manuales y no
+            el ERP</span></div>
+        <div class="md-cell">
+          <h3>Decisión 1, Construir la fuente de datos, no esperarla</h3>
+          <p>La pregunta interna era directa: ¿esperamos a que NetSuite madure o construimos algo funcional ahora? La respuesta no era obvia. Optar por captura manual implicaba trabajo operativo semanal en 18 plantas y la resistencia de gerentes acostumbrados a reportar como querían.</p>
+          <p>La decisión fue diseñar formatos Excel estandarizados con campos obligatorios específicos: precio real de
+            MP, variación vs estándar, overhead asignado, volumen producido y merma. Cada semana, desde BI recibíamos esos
+            formatos, los validábamos contra los registros parciales de NetSuite y construíamos la base auditada.</p>
+          <div class="note">Un dato incompleto en NetSuite era peor que un dato validado manualmente — porque el primero
+            generaba falsa confianza. Preferimos datos correctos sobre datos automáticos.</div>
+          <div class="insight">El formato estandarizado no era solo una herramienta de captura — era el mecanismo que
+            convertía la variación de materia prima en un KPI semanal visible para la dirección. Antes no existía ese
+            campo en ningún reporte.</div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct md">markdown</span><span class="cell-title">Por qué SACOS 4 como benchmark
+            y no el promedio del grupo</span></div>
+        <div class="md-cell">
+          <h3>Decisión 2, Calibrar contra la excepción correcta, no contra el promedio distorsionado</h3>
+          <p>Al analizar las 17 plantas, SACOS 4 era la única que reportaba sin distorsiones: incluía precio real de MP,
+            overhead corporativo correcto y sin duplicados. La pregunta fue si usar el promedio del grupo como
+            referencia o usar SACOS 4.</p>
+          <p>Usar el promedio hubiera institucionalizado el error. El grupo completo ya estaba distorsionado, así que
+            su promedio también lo estaba. SACOS 4 era el único punto de referencia limpio disponible.</p>
+          <p>El criterio quedó definido así: cualquier planta que se alejara más de <strong>±2pp</strong> de
+            SACOS 4 en conceptos operativos equivalentes quedaba marcada para revisión con el gerente de planta. Eso
+            convirtió el benchmark en una herramienta de auditoría continua, no solo de diagnóstico inicial.</p>
+          <div class="finding">Este tipo de decisión no la toma un algoritmo. Requiere entender el negocio
+            suficientemente bien como para saber qué dato es confiable, cuál no, y por qué.</div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct md">markdown</span><span class="cell-title">Por qué el CCC era el KPI que
+            nadie estaba viendo</span></div>
+        <div class="md-cell">
+          <h3>Decisión 3, Agregar el KPI de liquidez que nadie estaba viendo</h3>
+          <p>El análisis de P&L mostraba márgenes positivos en la mayoría de plantas. Técnicamente el negocio era
+            rentable. Pero una empresa puede ser rentable en papel y tener problemas reales de liquidez si tarda
+            demasiado en cobrar o mantiene inventario en exceso.</p>
+          <p>El Ciclo de Conversión de Efectivo — DSO + DIO — no se calculaba en ningún reporte anterior. Calcularlo con
+            los datos de Cash Flow disponibles reveló que el grupo tardaba <strong>74 días</strong> en convertir
+            producción en efectivo, contra un objetivo razonable de 55 días para el sector.</p>
+          <p>Esos 19 días de diferencia representan capital de trabajo atrapado en el ciclo operativo. No es una crisis,
+            pero es un riesgo silencioso: sin medición no existe, y sin existir, no se gestiona.</p>
+          <div class="insight">Identificar ese KPI no requirió un modelo complejo. Requirió saber qué pregunta hacer y
+            tener la curiosidad de buscar respuestas más allá del P&L.</div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct md">markdown</span><span class="cell-title">Por qué un esquema estrella y
+            no una tabla plana</span></div>
+        <div class="md-cell">
+          <h3>Decisión 4, Modelar los datos para que el tablero responda preguntas futuras</h3>
+          <p>La alternativa más rápida era consolidar todo en una tabla plana y conectarla directamente a Power BI.
+            Funciona para un reporte estático. No funciona cuando la dirección empieza a pedir cortes que no estaban
+            en el diseño original.</p>
+          <p>El modelo estrella — dos dimensiones (Plantas, Calendario) y cuatro tablas de hechos (Costos, Ingresos,
+            Producción, Cash Flow) — permite filtrar cualquier combinación de planta, período y categoría sin reescribir
+            la lógica. Las medidas DAX se construyen una vez y sirven para cualquier corte.</p>
+          <div class="note">Esta decisión de arquitectura es invisible para el usuario final, pero determina si el
+            tablero escala o si hay que rehacerlo cada vez que cambia una pregunta de negocio.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 EDA -->
+    <div class="section">
+      <div class="section-label"><span class="sec-num">04</span><span class="sec-title">EDA · <em>Estructura Financiera
+            del Grupo</em></span></div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct out">output</span><span class="cell-title">Snapshot financiero consolidado
+            — 2021–2023</span></div>
+        <div class="kpi-grid kpi-grid-5">
+          <div class="kpi ca">
+            <div class="kpi-lbl">Facturación Promedio</div>
+            <div class="kpi-val">$40.8M</div>
+            <div class="kpi-sub">MXN / mes · grupo completo</div>
+          </div>
+          <div class="kpi cg">
+            <div class="kpi-lbl">Facturación Total 3 Años</div>
+            <div class="kpi-val">$1,399M</div>
+            <div class="kpi-sub">MXN acumulado 2021–2023</div>
+          </div>
+          <div class="kpi cd">
+            <div class="kpi-lbl">Distorsión Promedio</div>
+            <div class="kpi-val">+10.9pp</div>
+            <div class="kpi-sub">Promedio grupo 2021–2023</div>
+          </div>
+          <div class="kpi cp">
+            <div class="kpi-lbl">Plantas con Distorsión</div>
+            <div class="kpi-val">14 / 17</div>
+            <div class="kpi-sub">82% reportaban mal</div>
+          </div>
+          <div class="kpi ct2">
+            <div class="kpi-lbl">División Líder</div>
+            <div class="kpi-val">32%</div>
+            <div class="kpi-sub">Stretch Film · +70% exportación</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct out">output</span><span class="cell-title">Charts — Estructura del
+            grupo</span></div>
+        <div class="chart-grid">
+          <div class="chart-box">
+            <div class="chart-lbl">Participación en Facturación por División (%)</div>
+            <canvas id="ch-div"></canvas>
+          </div>
+          <div class="chart-box">
+            <div class="chart-lbl">Estructura de Costos — % del Costo Total</div>
+            <canvas id="ch-cost"></canvas>
+          </div>
+          <div class="chart-box full">
+            <div class="chart-lbl">Evolución de Facturación Mensual por División — 2021 a 2023 ($MXN)</div>
+            <canvas id="ch-evol" style="max-height:220px;"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 DISTORSIONES -->
+    <div class="section">
+      <div class="section-label"><span class="sec-num">05</span><span class="sec-title">Core Analysis · <em>Detección de
+            Distorsiones de Rentabilidad</em></span></div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct code">code</span><span class="cell-title">03_distorsion_analysis.py</span>
+        </div>
+        <div class="cell-body">
+          <div class="code-block"><span class="cm"># ── Comparativo: margen reportado vs margen real homologado</span>
+            <span class="cm"># Para cada planta calculamos el promedio 2021-2022 (pre-corrección)</span>
+            <span class="cm"># vs el margen homologado post-corrección</span>
+
+            <span class="var">df_dist</span> = <span class="var">df_activas</span>.<span class="fn">groupby</span>(<span
+              class="str">'planta'</span>).<span class="fn">agg</span>(
+            <span class="var">margen_reportado</span>=(<span class="str">'margen_reportado'</span>, <span
+              class="str">'mean'</span>),
+            <span class="var">margen_real</span> =(<span class="str">'margen_real'</span>, <span
+              class="str">'mean'</span>),
+            <span class="var">distorsion_pp</span> =(<span class="str">'distorsion_pp'</span>, <span
+              class="str">'mean'</span>),).
+            <span class="fn">dropna</span>().<span class="fn">sort_values</span>(<span
+              class="str">'distorsion_pp'</span>, <span class="var">ascending</span>=<span class="kw">False</span>)
+
+            <span class="cm"># Clasificación de distorsión</span>
+            <span class="var">df_dist</span>[<span class="str">'tipo'</span>] = <span class="var">df_dist</span>[<span
+              class="str">'distorsion_pp'</span>].<span class="fn">apply</span>(
+            <span class="kw">lambda</span> <span class="var">x</span>: <span class="str">'Omite costos'</span> <span
+              class="kw">if</span> <span class="var">x</span> > <span class="num">0.02</span>
+            <span class="kw">else</span> <span class="str">'Duplica costos'</span> <span class="kw">if</span> <span
+              class="var">x</span>
+            < -<span class="num">0.02</span>
+              <span class="kw">else</span> <span class="str">'Correcto'</span>
+              )
+
+              <span class="cm"># Impacto financiero de la distorsión (sobre facturación promedio mensual)</span>
+              <span class="var">facturacion_mensual</span> = <span class="var">df_activas</span>.<span
+                class="fn">groupby</span>(<span class="str">'planta'</span>)[<span
+                class="str">'ingresos_real'</span>].<span class="fn">mean</span>()
+              <span class="var">df_dist</span>[<span class="str">'impacto_mensual_mxn'</span>] = (
+              <span class="var">df_dist</span>[<span class="str">'distorsion_pp'</span>].abs() * <span
+                class="var">facturacion_mensual</span>
+              )
+
+              <span class="fn">print</span>(<span class="var">df_dist</span>[[<span
+                class="str">'margen_reportado'</span>,<span class="str">'margen_real'</span>,<span
+                class="str">'distorsion_pp'</span>,<span class="str">'tipo'</span>]].<span class="fn">round</span>(<span
+                class="num">3</span>))
+          </div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct out">output</span><span class="cell-title">Tabla de distorsiones por planta
+            — promedio 2021–2022</span></div>
+        <div class="dist-table-wrap">
+          <table class="dist">
+            <thead>
+              <tr>
+                <th>Planta</th>
+                <th>División</th>
+                <th>Margen Reportado</th>
+                <th>Margen Real</th>
+                <th>Distorsión (pp)</th>
+                <th>Tipo</th>
+                <th>Causa Principal</th>
+              </tr>
+            </thead>
+            <tbody id="dist-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct out">output</span><span class="cell-title">Visualización — Margen reportado
+            vs real por planta</span></div>
+        <div class="chart-grid">
+          <div class="chart-box full">
+            <div class="chart-lbl">Margen Reportado vs Margen Real Homologado — Por Planta (%)</div>
+            <canvas id="ch-dist" style="max-height:240px;"></canvas>
+          </div>
+          <div class="chart-box">
+            <div class="chart-lbl">Distribución de Distorsión (pp) — Histograma</div>
+            <canvas id="ch-dist-hist"></canvas>
+          </div>
+          <div class="chart-box">
+            <div class="chart-lbl">Impacto Financiero Mensual por Distorsión ($MXN)</div>
+            <canvas id="ch-impacto"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct md">markdown</span><span class="cell-title">Key finding — distortion
+            magnitude</span></div>
+        <div class="md-cell">
+          <h3>Hallazgo Central: Dos Tipos de Mentira en los Datos</h3>
+          <p>El análisis mostró que las distorsiones no eran aleatorias, eran sistemáticas por planta. Identificamos
+            <strong>dos patrones opuestos</strong> que se repetían con consistencia:
+          </p>
+          <p><strong>Patrón 1: "Optimistas" (10 plantas):</strong> Omitían el costo real de materia prima usando precio
+            estándar sin ajuste por variación de mercado, aranceles de aduana ni flete de importación, y no imputaban el
+            overhead corporativo. El resultado: márgenes inflados entre <strong>+3.3pp y +7.8pp</strong> sobre la
+            realidad.</p>
+          <p><strong>Patrón 2: "Pesimistas" (4 plantas):</strong> Duplicaban conceptos de flete de distribución y mano
+            de obra. Sus márgenes aparecían subvaluados entre <strong>-4.0pp y -6.4pp. </strong>Estas plantas llegaban a
+            las juntas de presupuesto con números que las hacían ver menos rentables de lo que realmente eran y la
+            asignación de recursos lo reflejaba.</p>
+          <div class="finding">BOLSAS 1 tenía margen reportado de 2.6% cuando su margen real era 7.7%. El gerente de esa
+            división no había recibido inversión en maquinaria en 2 años porque "sus números no justificaban el capex".
+            Tras la homologación, el análisis mostró que era una de las operaciones más eficientes del grupo en su
+            categoría.</div>
+          <div class="insight">SACOS 4 fue la única planta que reportaba correctamente. Se convirtió en el benchmark de
+            referencia para calibrar el modelo. Su margen real de 9.5% se usó como piso para validar la coherencia de
+            los ajustes en las demás plantas de la misma división.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 06 ESTACIONALIDAD -->
+    <div class="section">
+      <div class="section-label"><span class="sec-num">06</span><span class="sec-title">Seasonality Analysis ·
+          <em>Patrones de Demanda Agrícola</em></span></div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct code">code</span><span class="cell-title">04_seasonality_10yr.py</span>
+        </div>
+        <div class="cell-body">
+          <div class="code-block"><span class="cm"># ── Análisis de estacionalidad sobre 10 años de ventas
+              históricas</span>
+            <span class="cm"># La mayoría de productos están ligados al ciclo agrícola:</span>
+            <span class="cm"># sacos, arpillas y cuerda para empaque de cosecha</span>
+            <span class="cm"># stretch film para conservación y transporte</span>
+
+            <span class="cm"># Factor estacional: promedio mensual / promedio anual</span>
+            <span class="var">df_seas</span> = <span class="var">df_activas</span>[<span
+              class="var">df_activas</span>[<span class="str">'ingresos_real'</span>] > <span
+              class="num">0</span>].<span class="fn">copy</span>()
+            <span class="var">df_seas</span>[<span class="str">'factor_estacional'</span>] = (
+            <span class="var">df_seas</span>.<span class="fn">groupby</span>([<span class="str">'division'</span>, <span
+              class="str">'mes'</span>])[<span class="str">'ingresos_real'</span>].<span
+              class="fn">transform</span>(<span class="str">'mean'</span>) /
+            <span class="var">df_seas</span>.<span class="fn">groupby</span>(<span class="str">'division'</span>)[<span
+              class="str">'ingresos_real'</span>].<span class="fn">transform</span>(<span class="str">'mean'</span>)
+            )
+
+            <span class="cm"># Identificar picos y valles por división</span>
+            <span class="var">seas_pivot</span> = <span class="var">df_seas</span>.<span
+              class="fn">groupby</span>([<span class="str">'division'</span>,<span class="str">'mes'</span>])[<span
+              class="str">'factor_estacional'</span>].<span class="fn">mean</span>().<span class="fn">unstack</span>()
+            <span class="var">picos</span> = <span class="var">seas_pivot</span>.<span class="fn">idxmax</span>(<span
+              class="var">axis</span>=<span class="num">1</span>) <span class="cm"># mes de mayor ingreso</span>
+            <span class="var">valles</span> = <span class="var">seas_pivot</span>.<span class="fn">idxmin</span>(<span
+              class="var">axis</span>=<span class="num">1</span>) <span class="cm"># mes de menor ingreso</span>
+
+            <span class="cm"># Ratio pico/valle = amplitud de la estacionalidad</span>
+            <span class="var">amplitud</span> = <span class="var">seas_pivot</span>.<span class="fn">max</span>(<span
+              class="var">axis</span>=<span class="num">1</span>) / <span class="var">seas_pivot</span>.<span
+              class="fn">min</span>(<span class="var">axis</span>=<span class="num">1</span>)
+            <span class="cm"># Stretch Film amplitud: 1.69x | Arpillas: 1.87x (más estacionales)</span>
+            <span class="cm"># Desechables amplitud: 1.15x (menos estacional)</span>
+
+            <span class="cm"># Implicación para presupuesto:</span>
+            <span class="cm"># El plan de producción de Feb-Abr debe cubrir 1.3x la capacidad promedio</span>
+            <span class="cm"># El valle Jul-Ago es momento óptimo para mantenimiento mayor de maquinaria</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct out">output</span><span class="cell-title">Estacionalidad — Curvas de
+            ingreso por división</span></div>
+        <div class="chart-grid">
+          <div class="chart-box full">
+            <div class="chart-lbl">Factor Estacional por División — Índice (1.0 = promedio anual)</div>
+            <canvas id="ch-seas" style="max-height:230px;"></canvas>
+          </div>
+          <div class="chart-box">
+            <div class="chart-lbl">Facturación Total Mensual — Grupo Completo ($MXN)</div>
+            <canvas id="ch-total-mes"></canvas>
+          </div>
+          <div class="chart-box">
+            <div class="chart-lbl">Amplitud Estacional por División (Ratio Pico/Valle)</div>
+            <canvas id="ch-amplitud"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct md">markdown</span><span class="cell-title">Seasonality insights</span>
+        </div>
+        <div class="md-cell">
+          <h3>Dos Picos, Un Valle y Una Oportunidad</h3>
+          <p>Diez años de ventas históricas confirmaron dos ciclos de demanda claramente definidos por el calendario
+            agrícola mexicano:</p>
+          <p><strong>Pico 1 (Feb–Abr):</strong> Siembra de cultivos primavera-verano. El pico más intenso del año para
+            Arpillas (+40% sobre promedio), Stretch Film (+35%) y Sacos (+30%). El equipo comercial concentra aquí el
+            38% de sus órdenes anuales.</p>
+          <p><strong>Pico 2 (Sep–Oct):</strong> Cosecha de ciclo otoño-invierno. Segundo pico relevante para todas las
+            divisiones agrícolas, con incrementos de entre 20% y 30%.</p>
+          <p><strong>Valle (Jun–Ago):</strong> Caída del 20–25% en ingresos para las divisiones agrícolas. Este período
+            era históricamente subutilizado. La recomendación fue redirigir capacidad de producción hacia inventario
+            anticipado de Stretch Film que tiene mayor vida útil y programar mantenimiento mayor de maquinaria
+            durante esas semanas.</p>
+          <div class="insight">Stretch Film es la excepción al patrón puramente agrícola: su pico de exportación corre
+            de Mar–May, ligeramente adelantado vs el mercado doméstico. Eso le da al equipo de ventas internacionales
+            una ventana de 6 semanas para planificar órdenes antes del pico nacional.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 07 VARIACIONES -->
+    <div class="section">
+      <div class="section-label"><span class="sec-num">07</span><span class="sec-title">Budget Variance · <em>Análisis
+            de Desviaciones Presupuestales</em></span></div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct out">output</span><span class="cell-title">KPIs y Desviaciones
+            presupuestales 2023 (año post-homologación)</span></div>
+        <div class="kpi-grid">
+          <div class="kpi ca">
+            <div class="kpi-lbl">Reducción en Desviaciones</div>
+            <div class="kpi-val">−10%</div>
+            <div class="kpi-sub">vs año base pre-homologación</div>
+            <div class="kpi-delta up">↑ Objetivo cumplido</div>
+          </div>
+          <div class="kpi cg">
+            <div class="kpi-lbl">Var. Promedio Costo vs Ppto</div>
+            <div class="kpi-val">±4.2%</div>
+            <div class="kpi-sub">2023 · vs ±14.7% en 2021</div>
+            <div class="kpi-delta up">↓ Mejora significativa</div>
+          </div>
+          <div class="kpi cd">
+            <div class="kpi-lbl">Principal Driver de Variación</div>
+            <div class="kpi-val">MP</div>
+            <div class="kpi-sub">Volatilidad petroquímica</div>
+            <div class="kpi-delta warn">+8–18% sobre estándar</div>
+          </div>
+          <div class="kpi cp">
+            <div class="kpi-lbl">CCC Promedio 2023</div>
+            <div class="kpi-val">74 días</div>
+            <div class="kpi-sub">vs objetivo de 55 días</div>
+            <div class="kpi-delta dn">↑ Por encima del objetivo</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct out">output</span><span class="cell-title">Variaciones por categoría de
+            costo y por división</span></div>
+        <div class="chart-grid">
+          <div class="chart-box">
+            <div class="chart-lbl">Variación Promedio por Categoría de Costo (% vs Ppto)</div>
+            <canvas id="ch-var-cat"></canvas>
+          </div>
+          <div class="chart-box">
+            <div class="chart-lbl">Variación de Costo Total por División 2023 (%)</div>
+            <canvas id="ch-var-div"></canvas>
+          </div>
+          <div class="chart-box full">
+            <div class="chart-lbl">Evolución de Variación de Costos vs Presupuesto 2021 a 2023 (%)</div>
+            <canvas id="ch-var-evol" style="max-height:180px;"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct md">markdown</span><span class="cell-title">Variance insight MP as
+            primary driver</span></div>
+        <div class="md-cell">
+          <h3>La Materia Prima como Factor de Riesgo Sistémico</h3>
+          <p>El análisis de variaciones mostró un patrón claro: la <strong>materia prima, </strong>resinas
+            petroquímicas como HDPE, LDPE, PP y LLDPE, era el único driver de costo con desviaciones consistentemente
+            positivas. Siempre por encima del precio estándar presupuestado, con magnitudes de <strong>+8% a
+              +18%</strong> dependiendo del mes y el tipo de resina.</p>
+          <p>Esa volatilidad estaba correlacionada con el precio del crudo y con los costos de importación: tipo de
+            cambio USD/MXN más aranceles. El modelo de costeo anterior usaba un precio estándar fijo anual que no se
+            actualizaba a lo largo del año, lo que garantizaba una desviación creciente conforme avanzaban los meses.
+          </p>
+          <div class="finding">En 2021, la variación de materia prima promedio fue +14.2% sobre el precio estándar.
+            Ninguna planta lo reportaba correctamente porque no existía un mecanismo formal de ajuste. El formato
+            estandarizado que introdujimos incluyó la columna "Variación de Precio MP vs Estándar" como campo
+            obligatorio, convirtiendo ese riesgo sistémico en un KPI semanal visible para la dirección.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 08 STACK TECNOLÓGICO -->
+    <div class="section">
+      <div class="section-label"><span class="sec-num">08</span><span class="sec-title">Tech Stack · <em>Por Qué Cada
+            Herramienta</em></span></div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct md">markdown</span><span class="cell-title">Stack con sentido
+            estratégico</span></div>
+        <div class="md-cell">
+          <h3>Las herramientas no son el punto, el criterio para elegirlas sí</h3>
+          <p>En 2026 cualquier herramienta es accesible. Lo que diferencia a un analista no es el stack que usa, sino
+            por qué eligió ese stack para ese problema específico.</p>
+
+          <p><strong>Python + Pandas: Limpieza y homologación</strong><br>
+            La lógica de ajuste de precio real de materia prima, la detección de duplicados por planta y la validación
+            cruzada con NetSuite se construyeron aquí. Python fue la herramienta más eficiente para transformar 36 meses de datos de 17 plantas en una base homologada y
+            auditable — un proceso repetible que cualquier analista del equipo pudiera entender y modificar.</p>
+
+          <p><strong>SQL: Arquitectura del modelo de datos</strong><br>
+            El esquema estrella — dos dimensiones y cuatro tablas de hechos — no es una decisión técnica menor. Define
+            qué preguntas se pueden responder rápido y cuáles requieren trabajo adicional. Un modelo bien diseñado
+            absorbe preguntas nuevas sin romperse. Un modelo plano se rehace cada vez que la dirección pide un corte
+            diferente.</p>
+
+          <p><strong>Power BI + DAX: Capa de visibilidad y criterio formalizado</strong><br>
+            Las medidas DAX no son solo cálculos — son la formalización del criterio de negocio en código. La medida de
+            Semáforo Planta define qué es "OK", qué es "Alerta" y qué es "Crítico". Esa definición la tomó una persona
+            con contexto del negocio, no un algoritmo. El tablero no reemplaza el juicio del analista; lo hace visible
+            y accionable para quien toma decisiones sin tiempo de revisar datos crudos.</p>
+
+          <p><strong>Oracle NetSuite: Validación cruzada, no fuente primaria</strong><br>
+            Esa distinción importa cuando un sistema está en implementación. Usarlo como fuente primaria hubiera
+            producido datos con huecos y errores. Usarlo como validación cruzada permitió detectar inconsistencias sin
+            depender de su completitud.</p>
+
+          <div class="note">El stack cabe en la "tríada clásica": SQL + Power BI + Python para EDA. No se
+            usaron librerías avanzadas de ML porque el problema no las requería. Aplicar un modelo de regresión donde
+            alcanza una tabla de variaciones no es sofisticación — es ruido.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 09 CONCLUSIONES -->
+    <div class="section">
+      <div class="section-label"><span class="sec-num">09</span><span class="sec-title">Conclusions &amp; ROI ·
+          <em>Conclusiones e Impacto</em></span></div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct out">output</span><span class="cell-title">Executive summary</span></div>
+        <div class="md-cellv2">
+          <h3>Executive Summary / Resumen Ejecutivo</h3>
+          <div class="concl-item">
+            <span class="concl-num">01</span>
+            <span class="concl-text"><strong>Rentabilidad real establecida por primera vez:</strong> La homologación del
+              criterio de costeo en 17 plantas mostró que el 82% reportaba márgenes distorsionados, con una distorsión
+              promedio de +10.9pp que se redujo a +10.68pp en 2023. Corregimos la imagen financiera de divisiones
+              completas y habilitamos por primera vez decisiones de capex basadas en rentabilidad real y
+              comparable.</span>
+          </div>
+          <div class="concl-item">
+            <span class="concl-num">02</span>
+            <span class="concl-text"><strong>Reducción del 10% en desviaciones presupuestales:</strong> La combinación
+              de formatos estandarizados, un modelo de variaciones semanal y visibilidad del precio real de MP redujo la
+              variación promedio de costos de ±14.7% (2021) a ±4.2% (2023). En 2023, 13 de 17 plantas cerraron dentro
+              del umbral de ±5%.</span>
+          </div>
+          <div class="concl-item">
+            <span class="concl-num">03</span>
+            <span class="concl-text"><strong>Estacionalidad cuantificada y accionable:</strong> El patrón agrícola de 10
+              años permitió alinear el presupuesto de producción a la demanda real: capacidad al 130% en Feb–Abr,
+              mantenimiento mayor en Jul–Ago, y anticipación de órdenes de exportación en Stretch Film con 6 semanas de
+              ventaja sobre el pico nacional.</span>
+          </div>
+          <div class="concl-item">
+            <span class="concl-num">04</span>
+            <span class="concl-text"><strong>Visibilidad unificada al CFO y al dueño:</strong> El dashboard semanal en
+              Power BI consolidó en una sola vista el P&L por planta, las variaciones vs presupuesto y los KPIs de
+              producción, eliminando los reportes paralelos e inconsistentes que cada gerente presentaba por su cuenta.
+              El análisis también reveló que el CCC del grupo se ubicaba en 74 días al cierre de 2023, por encima del
+              objetivo de 55 días, señalando una oportunidad concreta de mejora en la gestión de liquidez.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10 RECOMENDACIONES -->
+    <div class="section">
+      <div class="section-label"><span class="sec-num">10</span><span class="sec-title">Recommendations · <em>Tres
+            Acciones Concretas para el Negocio</em></span></div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct out">output</span><span class="cell-title">Recomendaciones ejecutivas
+            basadas en los datos</span></div>
+        <div class="scenario-3">
+          <div class="sc-card">
+            <div class="sc-tag" style="color:var(--accent);">RECOMENDACIÓN 01 · INMEDIATA</div>
+            <div class="sc-title">Institucionalizar el ajuste de MP en el ERP</div>
+            <div class="sc-row">
+              <div class="sc-label">Problema identificado</div>
+              <div style="font-size:12px;color:var(--text);">La variación de precio de materia prima pasó de +14.2%
+                sobre estándar en 2021 a +8.1% en 2023, no porque los precios bajaron, sino porque el formato
+                estandarizado hizo visible el riesgo semanalmente.</div>
+            </div>
+            <div class="sc-row" style="margin-top:12px;">
+              <div class="sc-label">Acción propuesta</div>
+              <div style="font-size:12px;color:var(--text);">Una vez que NetSuite madure, el campo "Variación de Precio
+                MP vs Estándar" debe ser obligatorio en el módulo de compras, no un reporte paralelo en Excel. La
+                visibilidad semanal que construimos manualmente debe volverse automática.</div>
+            </div>
+          </div>
+          <div class="sc-card hl">
+            <div class="sc-tag" style="color:var(--danger);">RECOMENDACIÓN 02 · PRIORIDAD ALTA</div>
+            <div class="sc-title">Reducir el CCC de 74 a 55 días</div>
+            <div class="sc-row">
+              <div class="sc-label">Problema identificado</div>
+              <div style="font-size:12px;color:var(--text);">El grupo tarda 74 días en convertir producción en efectivo
+                disponible. 19 días por encima del objetivo. Capital de trabajo atrapado en el ciclo operativo,
+                invisible hasta que este proyecto lo midió.</div>
+            </div>
+            <div class="sc-row" style="margin-top:12px;">
+              <div class="sc-label">Palancas disponibles</div>
+              <div style="font-size:12px;color:var(--text);">DSO: renegociar condiciones de pago con clientes de
+                divisiones con mayor días de cobro. DIO: reducir inventario de producto terminado durante el valle
+                estacional (Jun–Ago) redirigiendo capacidad a producción bajo pedido.</div>
+            </div>
+          </div>
+          <div class="sc-card">
+            <div class="sc-tag" style="color:var(--green);">RECOMENDACIÓN 03 · ESTRATÉGICA</div>
+            <div class="sc-title">Reasignar capex con criterio homologado</div>
+            <div class="sc-row">
+              <div class="sc-label">Problema identificado</div>
+              <div style="font-size:12px;color:var(--text);">BOLSAS 1 no recibió inversión en maquinaria en 2 años
+                porque su margen aparente era 2.6%. Su margen real era 7.7%, una de las operaciones más eficientes del
+                grupo. La asignación de recursos estaba guiada por datos incorrectos.</div>
+            </div>
+            <div class="sc-row" style="margin-top:12px;">
+              <div class="sc-label">Acción propuesta</div>
+              <div style="font-size:12px;color:var(--text);">Con todas las plantas midiendo bajo el mismo criterio, el
+                comité de capex ahora tiene una base comparable para priorizar inversión. El tablero de Power BI provee
+                esa base en tiempo real, sin esperar el cierre mensual.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ 11 CIERRE 
+    <div class="section">
+      <div class="section-label"><span class="sec-num">11</span><span class="sec-title">What This Demonstrates · <em>Lo
+            Que Este Proyecto Realmente Muestra</em></span></div>
+
+      <div class="cell">
+        <div class="cell-hd"><span class="ct md">markdown</span><span class="cell-title">Criterio sobre código</span>
+        </div>
+        <div class="md-cell" style="padding:24px 28px;">
+          <h3 style="margin-bottom:16px;">En 2026, cualquiera puede generar código.<br><span
+              style="color:var(--accent);">No cualquiera sabe qué pregunta hacer.</span></h3>
+          <p>Este proyecto no demuestra que sé usar Python o Power BI. Demuestra algo más difícil de replicar:</p>
+          <p style="margin-top:12px;"><strong>Que puedo entrar a una organización con datos fragmentados e
+              inconsistentes</strong> — donde el ERP no es confiable, donde cada gerente reporta diferente y donde nadie
+            mide la liquidez — <strong>e identificar por qué los datos están mal antes de analizarlos.</strong></p>
+          <p style="margin-top:12px;"><strong>Que puedo diseñar una solución que no depende de que el sistema sea
+              perfecto</strong> — porque los sistemas casi nunca son perfectos, y esperar que lo sean es una forma de no
+            resolver el problema.</p>
+          <p style="margin-top:12px;"><strong>Que puedo traducir el análisis en decisiones concretas de negocio</strong>
+            — no en métricas de modelo, sino en acciones: qué planta necesita inversión, qué KPI nadie está viendo, qué
+            riesgo de liquidez está activo.</p>
+          <div class="finding" style="margin-top:16px;">La IA puede escribir el código. No puede decidir que SACOS 4 es
+            el benchmark correcto y no el promedio del grupo. No puede saber que el CCC era el KPI que faltaba. No puede
+            entender por qué BOLSAS 1 merecía el capex que no recibió. Eso requiere criterio — y el criterio se
+            construye con contexto de negocio, no con librerías.</div>
+        </div>
+      </div>
+    </div >═══ -->
+    <a class="demo-link"
+      href="https://drive.google.com/drive/folders/19zmmRDBs9ehXa_5uu9DnvRWcxm_OjNj8?usp=drive_link"
+      target="_blank">
+      ↗ Explorar data room del proyecto
+    </a>
+    <p style="font-size:12px;color:var(--text-dim);margin-top:10px;">
+      ⚠ Aviso de confidencialidad: La información presentada ha sido anonimizada y parcialmente ajustada con fines
+      demostrativos. Estas modificaciones preservan la integridad metodológica y la validez de los hallazgos, sin
+      exponer datos sensibles o propietarios de la organización.
+    </p>
+    <div class="nb-footer">
+      <span>Grupo Ortiz · Finance & BI · 2023</span>
+      <span>Python 3.12 · Pandas · SQL · Oracle NetSuite · Power BI · Chart.js</span>
+    </div>
+  </div>
+
+  <script>
+    // ── DATA ─────────────────────────────────────────────────────
+    const C = {
+      accent: '#f5a623', accent2: '#e85d26', green: '#22c55e', danger: '#ef4444',
+      purple: '#a78bfa', teal: '#06b6d4', blue: '#3b82f6',
+      text: '#445a78', grid: 'rgba(26,37,64,0.7)', dim: '#1a2540'
+    };
+    Chart.defaults.color = C.text;
+    Chart.defaults.font.family = "'JetBrains Mono',monospace";
+    Chart.defaults.font.size = 10;
+    const tt = { backgroundColor: '#0f1525', borderColor: '#20304a', borderWidth: 1, titleColor: '#eaf2ff', bodyColor: C.text };
+    const sc = (xOpts, yOpts) => ({
+      x: { grid: { color: C.grid }, ticks: { color: C.text, ...(xOpts || {}) } },
+      y: { grid: { color: C.grid }, ticks: { color: C.text, ...(yOpts || {}) } }
+    });
+
+    // DIVISION PIE
+    new Chart(document.getElementById('ch-div'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Stretch Film', 'Arpillas', 'Sacos', 'Desechables', 'Cuerda', 'Bolsas', 'Emp. Flex.', 'Esquineros'],
+        datasets: [{
+          data: [32, 18, 16, 10, 8, 7, 5, 4],
+          backgroundColor: [C.accent + 'cc', C.accent2 + 'cc', C.blue + 'cc', C.teal + 'cc', C.green + 'cc', C.purple + 'cc', C.accent + '77', C.accent2 + '55'],
+          borderColor: '#161e2a', borderWidth: 3
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: true, position: 'bottom', labels: { color: C.text, font: { size: 9 } } }, tooltip: tt } }
+    });
+
+    // COST STRUCTURE
+    new Chart(document.getElementById('ch-cost'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Materia Prima (58%)', 'Mano de Obra (18%)', 'Energía (10%)', 'Depreciación (7%)', 'Overhead Corp. (5%)', 'Otros (2%)'],
+        datasets: [{
+          data: [58, 18, 10, 7, 5, 2],
+          backgroundColor: [C.danger + 'cc', C.blue + 'cc', C.accent + 'cc', C.purple + 'cc', C.green + 'cc', C.teal + '77'],
+          borderColor: '#161e2a', borderWidth: 3
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: true, position: 'bottom', labels: { color: C.text, font: { size: 9 } } }, tooltip: tt } }
+    });
+
+    // EVOLUCION MENSUAL (stacked area approximation)
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const meses3 = ['E21', 'F21', 'M21', 'A21', 'M21', 'J21', 'J21', 'A21', 'S21', 'O21', 'N21', 'D21',
+      'E22', 'F22', 'M22', 'A22', 'M22', 'J22', 'J22', 'A22', 'S22', 'O22', 'N22', 'D22',
+      'E23', 'F23', 'M23', 'A23', 'M23', 'J23', 'J23', 'A23', 'S23', 'O23', 'N23', 'D23'];
+    // Simulated monthly totals based on seasonal pattern
+    const baseMonthly = [30.1, 42.8, 44.6, 41.8, 36.4, 31.7, 27.7, 32.5, 39.8, 44.0, 36.8, 32.2];
+    const evolData = [];
+    for (let y = 0; y < 3; y++) {
+      const g = y === 0 ? 1 : y === 1 ? 1.08 : 1.12;
+      baseMonthly.forEach(v => evolData.push(+(v * g * (0.97 + Math.random() * 0.06)).toFixed(1)));
+    }
+    new Chart(document.getElementById('ch-evol'), {
+      type: 'line',
+      data: {
+        labels: meses3, datasets: [{
+          label: 'Facturación Total ($M MXN)', data: evolData,
+          borderColor: C.accent, backgroundColor: C.accent + '18', borderWidth: 2,
+          pointRadius: 1, tension: 0.4, fill: true
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        plugins: { legend: { display: false }, tooltip: tt },
+        scales: {
+          x: { grid: { color: C.grid }, ticks: { color: C.text, maxRotation: 45, font: { size: 8 } } },
+          y: { grid: { color: C.grid }, ticks: { callback: v => '$' + v + 'M', color: C.text } }
+        }
+      }
+    });
+
+    // DISTORSION TABLE
+    const distData = [
+      { planta: 'NEOFILM 1', div: 'Stretch Film', rep: 22.7, real: 14.9, dist: +7.8, tipo: 'Omite costos', causa: 'MP sin ajuste + overhead omitido' },
+      { planta: 'DESECHABLES', div: 'Desechables', rep: 15.9, real: 8.1, dist: +7.8, tipo: 'Omite costos', causa: 'MP sin ajuste + overhead omitido' },
+      { planta: 'NEOFILM 2', div: 'Stretch Film', rep: 21.4, real: 14.8, dist: +6.6, tipo: 'Omite costos', causa: 'MP sin ajuste + aduana omitida' },
+      { planta: 'ARPILLAS 1', div: 'Arpillas', rep: 17.2, real: 11.5, dist: +5.7, tipo: 'Omite costos', causa: 'Overhead y aduana omitidos' },
+      { planta: 'ESQUINEROS 1', div: 'Esquineros', rep: 12.4, real: 6.7, dist: +5.7, tipo: 'Omite costos', causa: 'MP sin ajuste' },
+      { planta: 'SACOS 1', div: 'Sacos', rep: 14.6, real: 9.3, dist: +5.3, tipo: 'Omite costos', causa: 'Overhead omitido' },
+      { planta: 'ESQUINEROS 2', div: 'Esquineros', rep: 11.9, real: 6.8, dist: +5.1, tipo: 'Omite costos', causa: 'MP sin ajuste' },
+      { planta: 'EMPAQUES FLEX 1', div: 'Empaques Flex.', rep: 13.5, real: 9.1, dist: +4.4, tipo: 'Omite costos', causa: 'Overhead parcial' },
+      { planta: 'SACOS 3', div: 'Sacos', rep: 13.1, real: 9.3, dist: +3.8, tipo: 'Omite costos', causa: 'Aduana omitida' },
+      { planta: 'CUERDA 1', div: 'Cuerda', rep: 13.4, real: 10.5, dist: +2.9, tipo: 'Omite costos', causa: 'MP sin ajuste parcial' },
+      { planta: 'SACOS 4', div: 'Sacos', rep: 9.5, real: 9.5, dist: 0.0, tipo: 'Correcto', causa: 'Benchmark de referencia' },
+      { planta: 'ESQUINEROS 3', div: 'Esquineros', rep: 2.6, real: 6.6, dist: -4.0, tipo: 'Duplica costos', causa: 'Flete duplicado' },
+      { planta: 'BOLSAS 1', div: 'Bolsas', rep: 2.6, real: 7.7, dist: -5.1, tipo: 'Duplica costos', causa: 'Flete + MO duplicados' },
+      { planta: 'SACOS 2', div: 'Sacos', rep: 3.5, real: 9.6, dist: -6.1, tipo: 'Duplica costos', causa: 'MO duplicada' },
+      { planta: 'ARPILLAS 2', div: 'Arpillas', rep: 5.0, real: 11.4, dist: -6.4, tipo: 'Duplica costos', causa: 'Flete y MO duplicados' },
+    ];
+    const tbody = document.getElementById('dist-tbody');
+    distData.forEach(d => {
+      const isOk = d.tipo === 'Correcto';
+      const isOmit = d.dist > 0;
+      const badgeClass = isOk ? 'bd-ok' : isOmit ? 'bd-omit' : 'bd-dup';
+      const distColor = isOk ? C.green : isOmit ? C.danger : C.blue;
+      const barW = Math.min(Math.abs(d.dist) / 8 * 100, 100);
+      tbody.innerHTML += `<tr>
+    <td style="font-weight:600;color:#eaf2ff;">${d.planta}</td>
+    <td class="td-dim">${d.div}</td>
+    <td class="td-r" style="color:${isOmit && !isOk ? C.danger : isOk ? C.green : C.blue};">${d.rep.toFixed(1)}%</td>
+    <td class="td-r td-g">${d.real.toFixed(1)}%</td>
+    <td class="td-r" style="color:${distColor};font-weight:600;">${d.dist > 0 ? '+' : ''}${d.dist.toFixed(1)}pp
+      <span class="bar-wrap"><span class="bar-fill" style="width:${barW}%;background:${distColor};"></span></span>
+    </td>
+    <td><span class="badge-dist ${badgeClass}">${d.tipo}</span></td>
+    <td class="td-dim" style="font-size:10px;">${d.causa}</td>
+  </tr>`;
+    });
+
+    // DIST COMPARISON BAR
+    new Chart(document.getElementById('ch-dist'), {
+      type: 'bar',
+      data: {
+        labels: distData.map(d => d.planta),
+        datasets: [
+          { label: 'Margen Reportado', data: distData.map(d => d.rep), backgroundColor: C.danger + '88', borderColor: C.danger, borderWidth: 1, borderRadius: 3 },
+          { label: 'Margen Real', data: distData.map(d => d.real), backgroundColor: C.green + '88', borderColor: C.green, borderWidth: 1, borderRadius: 3 },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true, plugins: { legend: { display: true, position: 'bottom', labels: { color: C.text, font: { size: 10 } } }, tooltip: tt },
+        scales: {
+          x: { grid: { color: C.grid }, ticks: { color: C.text, font: { size: 8 }, maxRotation: 45 } },
+          y: { grid: { color: C.grid }, ticks: { callback: v => v + '%', color: C.text }, min: 0, max: 28 }
+        }
+      }
+    });
+
+    // DIST HISTOGRAM
+    new Chart(document.getElementById('ch-dist-hist'), {
+      type: 'bar',
+      data: {
+        labels: ['< -5pp', '-5 a -3pp', '-3 a -1pp', '-1 a +1pp', '+1 a +3pp', '+3 a +5pp', '> +5pp'],
+        datasets: [{
+          data: [2, 2, 0, 1, 1, 2, 7],
+          backgroundColor: [C.blue + 'cc', C.blue + '88', C.blue + '44', C.green + 'cc', C.accent + '44', C.danger + '88', C.danger + 'cc'],
+          borderColor: C.dim, borderWidth: 1, borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false }, tooltip: tt },
+        scales: {
+          x: { grid: { color: C.grid }, ticks: { color: C.text, font: { size: 9 } } },
+          y: { grid: { color: C.grid }, ticks: { color: C.text }, title: { display: true, text: '# Plantas', color: C.text } }
+        }
+      }
+    });
+
+    // IMPACTO FINANCIERO
+    const impacto = distData.filter(d => d.dist !== 0).map(d => ({ p: d.planta, v: +(Math.abs(d.dist) / 100 * 2000000).toFixed(0) }))
+      .sort((a, b) => b.v - a.v);
+    new Chart(document.getElementById('ch-impacto'), {
+      type: 'bar',
+      data: {
+        labels: impacto.map(d => d.p),
+        datasets: [{
+          data: impacto.map(d => d.v),
+          backgroundColor: impacto.map((_, i) => i < 7 ? C.danger + '99' : C.blue + '99'),
+          borderColor: impacto.map((_, i) => i < 7 ? C.danger : C.blue),
+          borderWidth: 1, borderRadius: 4
+        }]
+      },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: true,
+        plugins: { legend: { display: false }, tooltip: { ...tt, callbacks: { label: ctx => '$' + ctx.parsed.x.toLocaleString() + ' MXN/mes' } } },
+        scales: {
+          x: { grid: { color: C.grid }, ticks: { callback: v => '$' + (v / 1000).toFixed(0) + 'K', color: C.text } },
+          y: { grid: { color: C.grid }, ticks: { color: C.text, font: { size: 9 } } }
+        }
+      }
+    });
+
+    // ESTACIONALIDAD
+    const seasDivs = ['Stretch Film', 'Arpillas', 'Sacos', 'Desechables'];
+    const seasColors = [C.accent, C.green, C.blue, C.purple];
+    const seasFactors = {
+      'Stretch Film': [0.85, 1.20, 1.35, 1.25, 1.10, 0.90, 0.80, 0.85, 1.20, 1.30, 1.10, 0.90],
+      'Arpillas': [0.80, 1.25, 1.40, 1.30, 1.05, 0.85, 0.75, 0.90, 1.25, 1.35, 1.05, 0.85],
+      'Sacos': [0.85, 1.15, 1.30, 1.20, 1.00, 0.90, 0.80, 0.95, 1.20, 1.25, 1.05, 0.90],
+      'Desechables': [1.10, 1.05, 0.95, 0.90, 0.95, 1.00, 1.10, 1.15, 1.00, 0.95, 0.95, 1.10],
+    };
+    new Chart(document.getElementById('ch-seas'), {
+      type: 'line',
+      data: {
+        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+        datasets: seasDivs.map((d, i) => ({
+          label: d, data: seasFactors[d], borderColor: seasColors[i],
+          backgroundColor: seasColors[i] + '18', borderWidth: 2,
+          pointBackgroundColor: seasColors[i], pointRadius: 4, tension: 0.3, fill: false
+        }))
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        plugins: {
+          legend: { display: true, position: 'bottom', labels: { color: C.text, font: { size: 10 } } }, tooltip: tt,
+          annotation: { annotations: { line1: { type: 'line', yMin: 1, yMax: 1, borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1, borderDash: [4, 4] } } }
+        },
+        scales: {
+          x: { grid: { color: C.grid }, ticks: { color: C.text } },
+          y: { grid: { color: C.grid }, min: 0.6, max: 1.55, ticks: { callback: v => v.toFixed(2) + 'x', color: C.text } }
+        }
+      }
+    });
+
+    // TOTAL MENSUAL
+    const totalMes = [86.7, 123.0, 128.2, 120.2, 104.6, 91.1, 79.8, 93.5, 114.4, 126.6, 105.8, 92.6];
+    new Chart(document.getElementById('ch-total-mes'), {
+      type: 'bar',
+      data: {
+        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+        datasets: [{
+          data: totalMes,
+          backgroundColor: totalMes.map(v => v > 115 ? C.accent + 'cc' : v < 90 ? C.blue + '66' : C.accent + '66'),
+          borderColor: totalMes.map(v => v > 115 ? C.accent : v < 90 ? C.blue : C.accent + 'aa'),
+          borderWidth: 1, borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false }, tooltip: { ...tt, callbacks: { label: ctx => '$' + ctx.parsed.y.toFixed(1) + 'M MXN' } } },
+        scales: {
+          x: { grid: { color: C.grid }, ticks: { color: C.text } },
+          y: { grid: { color: C.grid }, ticks: { callback: v => '$' + v + 'M', color: C.text } }
+        }
+      }
+    });
+
+    // AMPLITUD
+    new Chart(document.getElementById('ch-amplitud'), {
+      type: 'bar',
+      data: {
+        labels: ['Arpillas', 'Stretch Film', 'Cuerda', 'Sacos', 'Bolsas', 'Empaques', 'Esquineros', 'Desechables'],
+        datasets: [{
+          data: [1.87, 1.69, 1.69, 1.63, 1.28, 1.38, 1.41, 1.15],
+          backgroundColor: ctx => ctx.parsed.y > 1.6 ? C.danger + 'aa' : ctx.parsed.y > 1.4 ? C.accent + 'aa' : C.green + 'aa',
+          borderColor: ctx => ctx.parsed.y > 1.6 ? C.danger : ctx.parsed.y > 1.4 ? C.accent : C.green,
+          borderWidth: 1, borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false }, tooltip: tt },
+        scales: {
+          x: { grid: { color: C.grid }, ticks: { color: C.text, font: { size: 9 } } },
+          y: { grid: { color: C.grid }, min: 1, ticks: { callback: v => v.toFixed(2) + 'x', color: C.text } }
+        }
+      }
+    });
+
+    // VARIACION POR CATEGORIA
+    new Chart(document.getElementById('ch-var-cat'), {
+      type: 'bar',
+      data: {
+        labels: ['Materia Prima', 'Energía', 'M. de Obra', 'Depreciación', 'Overhead', 'Otros'],
+        datasets: [
+          { label: '2021', data: [14.2, 6.8, 3.2, 1.1, 2.4, 4.5], backgroundColor: C.danger + '55', borderColor: C.danger, borderWidth: 1, borderRadius: 3 },
+          { label: '2022', data: [10.5, 5.2, 2.1, 0.8, 1.2, 2.8], backgroundColor: C.accent + '88', borderColor: C.accent, borderWidth: 1, borderRadius: 3 },
+          { label: '2023', data: [8.1, 3.5, 1.4, 0.6, 0.8, 1.2], backgroundColor: C.green + '88', borderColor: C.green, borderWidth: 1, borderRadius: 3 },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true, plugins: { legend: { display: true, position: 'bottom', labels: { color: C.text, font: { size: 10 } } }, tooltip: tt },
+        scales: {
+          x: { grid: { color: C.grid }, ticks: { color: C.text, font: { size: 9 } } },
+          y: { grid: { color: C.grid }, ticks: { callback: v => '+' + v + '%', color: C.text } }
+        }
+      }
+    });
+
+    // VARIACION POR DIVISION 2023
+    new Chart(document.getElementById('ch-var-div'), {
+      type: 'bar',
+      data: {
+        labels: ['Stretch Film', 'Arpillas', 'Sacos', 'Desechables', 'Cuerda', 'Bolsas', 'Emp.Flex.', 'Esquineros'],
+        datasets: [{
+          data: [5.2, 4.8, 3.9, 6.1, 3.2, 4.5, 4.1, 5.8],
+          backgroundColor: ctx => ctx.parsed.y > 5 ? C.accent + 'cc' : C.green + '99',
+          borderColor: ctx => ctx.parsed.y > 5 ? C.accent : C.green,
+          borderWidth: 1, borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false }, tooltip: tt },
+        scales: {
+          x: { grid: { color: C.grid }, ticks: { color: C.text, font: { size: 9 } } },
+          y: { grid: { color: C.grid }, ticks: { callback: v => '+' + v + '%', color: C.text } }
+        }
+      }
+    });
+
+    // VARIACION EVOLUCION
+    new Chart(document.getElementById('ch-var-evol'), {
+      type: 'line',
+      data: {
+        labels: meses3,
+        datasets: [
+          {
+            label: 'Variación Costos vs Ppto (%)',
+            data: meses3.map((_, i) => {
+              const base = i < 12 ? 14.7 : i < 24 ? 9.8 : 4.2;
+              return +(base + (Math.random() - 0.5) * 4).toFixed(1);
+            }),
+            borderColor: C.accent, backgroundColor: C.accent + '18', borderWidth: 2,
+            pointRadius: 1, tension: 0.3, fill: true
+          },
+          {
+            label: 'Umbral alerta (±10%)',
+            data: Array(36).fill(10),
+            borderColor: C.danger + '66', borderDash: [4, 4], borderWidth: 1, pointRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        plugins: { legend: { display: true, position: 'bottom', labels: { color: C.text, font: { size: 10 } } }, tooltip: tt },
+        scales: {
+          x: { grid: { color: C.grid }, ticks: { color: C.text, font: { size: 8 }, maxRotation: 45 } },
+          y: { grid: { color: C.grid }, ticks: { callback: v => v + '%', color: C.text }, min: 0, max: 22 }
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>
